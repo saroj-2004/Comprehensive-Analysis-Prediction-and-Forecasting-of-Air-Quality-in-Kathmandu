@@ -1,7 +1,6 @@
 import pandas as pd
 from prophet import Prophet
 import matplotlib.pyplot as plt
-import streamlit as st
 def train_prophet_model(data):
     df =data
     df = df.rename(columns={"Datetime": "ds", "AQI": "y"})  

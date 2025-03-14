@@ -3,7 +3,6 @@ import pandas as pd
 import seaborn as sns
 import plotly.express as px         
 import pickle
-from prophet import Prophet
 from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 import numpy as np
