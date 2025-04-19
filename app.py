@@ -37,7 +37,7 @@ def set_text_color():
 
 def welcome_page():
 
-    set_background("https://i.imgur.com/w9qgmgO.jpeg")  #https://i.imgur.com/LuV9Pw2.jpeg
+    set_background("https://i.imgur.com/w9qgmgO.jpeg")  
     set_text_color()
     st.title("Welcome to the Air Quality Prediction and Forecasting App!")
     
@@ -96,7 +96,7 @@ def main():
         
             df = load_data()
             if not df.empty:
-                tab1, tab2, tab3, tab4 = st.tabs(["🗺️ Data Table", "📈 Time Series", "📊 Statistics", "📉 Trend"])
+                tab1, tab2, tab3 = st.tabs(["🗺️ Data Table", "📈 Time Series", "📊 Statistics"])
                 with tab1:
                     st.write("### Historical AQI Data of Kathmandu")
                     search_term = st.text_input("Search data with Date:", placeholder="YYYY-MM-DD")
@@ -211,15 +211,6 @@ def main():
                     )
                     st.plotly_chart(fig, use_container_width=True)
                     
-                with tab4:
-                    st.subheader("Yearly,weekly and Dailly Trends")
-                    trends_clicked = st.button("Show Trends", type="primary")
-                    if trends_clicked:
-                        with st.spinner("Generating....."):
-                           pmodel = train_prophet_model(df)
-                           forecast = forecast_aqi(pmodel)
-                           fig = pmodel.plot_components(forecast)
-                           st.pyplot(fig)
             else:
                 st.warning("No data available for visualization.")
         
@@ -318,38 +309,50 @@ def main():
             if data.empty:
                 st.warning("No data available for forecasting. Please upload historical data first.")
                 st.stop()
+            tab1, tab2 = st.tabs(["📈 Forecast", "📉 Trend"])
+            with tab1:
+                # Select forecast time
+                forecast_hours = st.selectbox("Select Forecast Duration (hours)", [24, 48, 72], index=0)
+                forecast_clicked = st.button("Generate Forecast", type="primary")
+                if forecast_clicked:
+                   pmodel = train_prophet_model(data)
+                   with st.spinner("forecasting...."):
             
-            # Select forecast time
-            forecast_hours = st.selectbox("Select Forecast Duration (hours)", [24, 48, 72], index=0)
-            forecast_clicked = st.button("Generate Forecast", type="primary")
-            if forecast_clicked:
-               pmodel = train_prophet_model(data)
-               with st.spinner("forecasting...."):
+                      forecast_time = [datetime.now() + timedelta(hours=i) for i in range(1, forecast_hours + 1)]
+                      # Get forecasted AQI data
+                      forecast = forecast_aqi(pmodel, forecast_hours)
+                      
+                      forecast_df = forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].tail(forecast_hours)
+                      forecast_df.columns = ["Datetime", "Forecasted AQI", "Lower Bound", "Upper Bound"]
+                      forecast_df["Datetime"] = forecast_time
         
-                  forecast_time = [datetime.now() + timedelta(hours=i) for i in range(1, forecast_hours + 1)]
-                  # Get forecasted AQI data
-                  forecast = forecast_aqi(pmodel, forecast_hours)
-                  
-                  forecast_df = forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].tail(forecast_hours)
-                  forecast_df.columns = ["Datetime", "Forecasted AQI", "Lower Bound", "Upper Bound"]
-                  forecast_df["Datetime"] = forecast_time
-    
-            # Display forecast data
-               st.write("### Forecasted AQI Data")
-               st.dataframe(forecast_df)
-               
-               # Plot forecast
-               plt.figure(figsize=(12, 6))
-               plt.plot(forecast_df["Datetime"], forecast_df["Forecasted AQI"], label="Forecasted AQI", color='r')
-               plt.fill_between(forecast_df["Datetime"], forecast_df["Lower Bound"], forecast_df["Upper Bound"], 
-                                color='pink', alpha=0.3, label='Uncertainty Interval')
-               plt.xlabel("Datetime")
-               plt.ylabel("AQI")
-               plt.title(f"{forecast_hours}-Hour AQI Forecast")
-               plt.xticks(rotation=45)
-               plt.grid(True)
-               plt.legend()
-               st.pyplot(plt)
+                # Display forecast data
+                   st.write("### Forecasted AQI Data")
+                   st.dataframe(forecast_df)
+                   
+                   # Plot forecast
+                   plt.figure(figsize=(12, 6))
+                   plt.plot(forecast_df["Datetime"], forecast_df["Forecasted AQI"], label="Forecasted AQI", color='r')
+                   plt.fill_between(forecast_df["Datetime"], forecast_df["Lower Bound"], forecast_df["Upper Bound"], 
+                                    color='pink', alpha=0.3, label='Uncertainty Interval')
+                   plt.xlabel("Datetime")
+                   plt.ylabel("AQI")
+                   plt.title(f"{forecast_hours}-Hour AQI Forecast")
+                   plt.xticks(rotation=45)
+                   plt.grid(True)
+                   plt.legend()
+                   st.pyplot(plt)
+
+                 
+            with tab2:
+                    st.subheader("Yearly,weekly and Dailly Trends")
+                    trends_clicked = st.button("Show Trends", type="primary")
+                    if trends_clicked:
+                        with st.spinner("Generating....."):
+                           pmodel = train_prophet_model(data)
+                           forecast = forecast_aqi(pmodel)
+                           fig = pmodel.plot_components(forecast)
+                           st.pyplot(fig)
 
             
            

@@ -9,7 +9,7 @@ def train_prophet_model(data):
     model.fit(df)
     
     return model
-def forecast_aqi(model, hours=24):
+def forecast_aqi(model, hours=72):
     """Generate AQI forecast for the next 'hours' using the trained model."""
     future_dates = model.make_future_dataframe(periods=hours, freq='H')
     forecast = model.predict(future_dates)
