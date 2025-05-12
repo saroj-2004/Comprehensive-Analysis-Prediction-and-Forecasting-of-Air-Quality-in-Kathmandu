@@ -1,6 +1,5 @@
-import pandas as pd
+
 from prophet import Prophet
-import matplotlib.pyplot as plt
 def train_prophet_model(data):
     df =data
     df = df.rename(columns={"Datetime": "ds", "AQI": "y"})  
@@ -11,7 +10,7 @@ def train_prophet_model(data):
     return model
 def forecast_aqi(model, hours=72):
     """Generate AQI forecast for the next 'hours' using the trained model."""
-    future_dates = model.make_future_dataframe(periods=hours, freq='H')
+    future_dates = model.make_future_dataframe(periods=hours, freq='h')
     forecast = model.predict(future_dates)
 
 

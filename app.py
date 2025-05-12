@@ -55,9 +55,9 @@ def welcome_page():
     
     # Button to enter dashboard
     if st.button("Enter Dashboard"):
-           st.session_state.entered_dashboard = True
-           st.markdown("✅ Click again to confirm.")
-           return True
+        st.session_state.entered_dashboard = True
+        st.markdown("✅ Click again to confirm.")
+        return True
     else:
            return False
 
@@ -80,7 +80,7 @@ def main():
         @st.cache_data
         def load_data():
             try:
-                return pd.read_csv("Air_Quality_dataset_of_kathmandu_modified.csv", parse_dates=["Datetime"])
+                return pd.read_csv(r"C:\Projects\DSproject\Data\Air_Quality_dataset_of_kathmandu.csv", parse_dates=["Datetime"])
             except FileNotFoundError:
                 return pd.DataFrame(columns=["Datetime", "AQI"])
         
@@ -152,13 +152,34 @@ def main():
                             monthly_avg, 
                             x='YearMonth', 
                             y='AQI',
-                            title='Monthly Average AQI',
+                            title='Monthly Average AQI for all Years',
                             labels={'AQI': 'Average AQI', 'YearMonth': 'Month'},
                             color='AQI',
                             color_continuous_scale=px.colors.sequential.Viridis,
                             template="plotly_white"
                         )
                         st.plotly_chart(bar_fig, use_container_width=True)
+                    
+                    df['Month'] = df['Datetime'].dt.month
+                    df['Month_Name'] = df['Datetime'].dt.strftime('%B') 
+
+                    month_order = ['January', 'February', 'March', 'April', 'May', 'June',
+                                  'July', 'August', 'September', 'October', 'November', 'December']
+                    
+                    monthly_avg_all = df.groupby('Month_Name')['AQI'].mean().reindex(month_order).reset_index()
+
+                    month_fig = px.bar(
+                        monthly_avg_all,
+                        x='Month_Name',
+                        y='AQI',
+                        title='Average Monthly AQI (Across All Years)',
+                        labels={'AQI': 'Average AQI', 'Month_Name': 'Month'},
+                        color='AQI',
+                        color_continuous_scale='Inferno',
+                        template='plotly_white'
+                    )
+                
+                    st.plotly_chart(month_fig, use_container_width=True)
                 
                 with tab3:
                     st.subheader("AQI Statistics")
@@ -240,7 +261,7 @@ def main():
                 with col_g2:
                    so2 = st.number_input("SO2 (μg/m³)", min_value=0.0, value=5.0, format="%.2f",help="Sulfur Dioxide concentration")
                    o3 = st.number_input("O3 (μg/m³)", min_value=0.0, value=30.0, format="%.2f",help="Ozone concentration")
-                
+
                 st.markdown("**Weather**")
                 col_w1, col_w2 = st.columns(2)
                 with col_w1:
@@ -276,7 +297,7 @@ def main():
                          
                          # Get AQI category
                          category, color, advice, emoji = categorize_aqi(predicted_aqi)
-                
+                 
                 # Display prediction with improved styling
                          st.markdown(
                                  f"""
