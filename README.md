@@ -4,7 +4,6 @@ This will predict and forecast the air quality of kathmandu
 
 This project aims to predict and analyze the Air Quality Index (AQI) for Kathmandu, Nepal. The model predicts AQI levels using environmental data and provides insights into the air quality of the city. By forecasting AQI values, the project helps in understanding air pollution trends and its potential health impacts.
 
-🔗 **Live App:** [kathmanduairqualityforecasting.streamlit.app](https://kathmanduairqualityforecasting.streamlit.app)
 
 ---
 
